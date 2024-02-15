@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"path/filepath"
 
 	"github.com/alexandremot/go-htmlx/infrastructure/web"
 	"github.com/alexandremot/go-htmlx/internal/app/handler"
@@ -10,6 +11,7 @@ import (
 )
 
 func main() {
+
 	// Initialize your services here
 	contentService := service.NewContentService()
 
@@ -21,8 +23,16 @@ func main() {
 	router.HandleFunc("/", contentHandler.ServeHTTP).Methods(http.MethodGet)
 	router.HandleFunc("/update", contentHandler.ServeHTTP).Methods(http.MethodGet)
 
+	router.HandleFunc("/readme", contentHandler.ServeHTTP).Methods(http.MethodGet)
+
+	absPublicPath, _ := filepath.Abs("public")
+	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir(absPublicPath))))
+
+	absStaticPath, _ := filepath.Abs("static")
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(absStaticPath))))
+
 	// Start the server
-	port := ":8080"
+	port := ":9090"
 	log.Printf("Starting server on %s\n", port)
 	if err := http.ListenAndServe(port, router); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
